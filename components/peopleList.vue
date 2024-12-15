@@ -1,11 +1,12 @@
 <script setup lang="ts">
-const { path } = useRoute()
+const { isPreview, pageId, path, appendPreviewUrl } = usePreview()
 
-const { data, error } = await useFetch('/api/children', {
+const { data} = await useFetch('/api/children', {
   method: 'GET',
   params: {
-    path,
-    contentType: 'person'
+    path: isPreview ? pageId : path,
+    contentType: 'person',
+    isPreview
   }
 })
 </script>
@@ -15,8 +16,8 @@ const { data, error } = await useFetch('/api/children', {
     <ul>
       <template v-for="person in data" :key="person.name">
         <li>
-          <NuxtLink :to="person.route.path">
-            {{ person.name }}
+          <NuxtLink :to="appendPreviewUrl(person?.route?.path)">
+            {{ person?.name }}
           </NuxtLink>
         </li>
       </template>

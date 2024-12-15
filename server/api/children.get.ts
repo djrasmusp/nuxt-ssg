@@ -1,22 +1,15 @@
 import { useCustomFetch } from '~/composables/useCustomFetch';
-import {z} from "zod";
-
-const querySchema = z.object({
-  path: z.string().startsWith('/'),
-  contentType: z.string()
-})
 
 export default defineEventHandler(async (event) => {
   try {
-    const query  = await getValidatedQuery<{ path: string, contentType: string}>(event, query => {
-      querySchema.parse(query);
-    })
+    const query = getQuery(event);
 
     const {items } = await useCustomFetch<{ total: number, items: object[]}>('', {
       method: 'GET',
-      query: {
+      params: {
         fetch: 'children:' + query.path,
         contentType: query.contentType,
+        isPreview: query.isPreview
       },
       onRequest: ({ options}) => {
         options.headers.delete('Start-Item')
@@ -25,6 +18,10 @@ export default defineEventHandler(async (event) => {
 
     return items;
   }catch(err) {
-    console.error(err);
+    throw createError({
+      statusCode: err.statusCode,
+      message: err.message,
+      data: []
+    })
   }
 })

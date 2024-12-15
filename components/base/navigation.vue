@@ -1,5 +1,10 @@
 <script setup lang="ts">
-  const {data : navigationItems} = await useFetch('/api/navigation')
+  const { isPreview, appendPreviewUrl } = usePreview()
+  const {data : navigationItems} = await useFetch('/api/navigation', {
+    params: {
+      isPreview
+    },
+  })
 </script>
 
 <template>
@@ -7,7 +12,7 @@
     <ul>
       <template v-for="item in navigationItems" :key="item.id">
       <li>
-        <NuxtLink :to="item.route.path">
+        <NuxtLink :to="appendPreviewUrl(item.route.path)">
         {{ item.properties.pageTitle }}
         </NuxtLink>
       </li>

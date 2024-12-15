@@ -3,7 +3,8 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   runtimeConfig: {
     umbracoBaseUrl: process.env.NUXT_UMBRACO_BASE_URL,
-    umbracoStartNode: process.env.NUXT_UMBRACO_START_NODE
+    umbracoStartNode: process.env.NUXT_UMBRACO_START_NODE,
+    umbracoApiKey: process.env.NUXT_UMBRACO_API_KEY
   },
   routeRules: {
     '/**' : {

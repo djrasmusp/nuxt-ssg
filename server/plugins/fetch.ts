@@ -2,11 +2,15 @@ import { defineNitroPlugin } from '#imports';
 import { $fetch } from 'ofetch';
 
 export default defineNitroPlugin((nitroApp) => {
-    const { umbracoBaseUrl, umbracoStartNode } = useRuntimeConfig();
+    const { umbracoBaseUrl, umbracoStartNode, umbracoApiKey } = useRuntimeConfig();
 
-    nitroApp.hooks.hook('custom:fetch', async (url: string, options: Record<string, any> = {}) => {
+    nitroApp.hooks.hook('custom:fetch', async (url: string, options: Record<string, any> = {}, isPreview: boolean = false) => {
         try {
-            // Tilføj default baseURL og headers
+
+            const isPreview = (options.params?.isPreview === 'true')
+            delete options.params.isPreview
+            const hasFetch = (options.params.fetch)
+
             const response = await $fetch(url, {
                 baseURL: `${umbracoBaseUrl}/umbraco/delivery/api/v2/content`,
                 headers: {
@@ -14,12 +18,26 @@ export default defineNitroPlugin((nitroApp) => {
                     ...options.headers,
                 },
                 ...options,
+                onRequest({ options }){
+                    if(hasFetch){
+                        options.headers.delete('Start-Item')
+                    }
+                    if(isPreview){
+                            options.headers.set('Preview', 'true')
+                        options.headers.set('Api-Key', umbracoApiKey)
+                        options.headers.delete('Start-Item')
+                    }
+                },
             });
 
             return response;
         } catch (error: any) {
             console.error(`Failed to fetch ${url}:`, error);
-            throw new Error(`Failed to fetch ${url}: ${error.message}`);
+            throw createError({
+                statusCode: error.statusCode,
+                message: error.message,
+                data: []
+            })
         }
     });
 });
